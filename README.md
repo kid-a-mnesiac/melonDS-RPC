@@ -30,7 +30,7 @@ The installation is as simple as downloading the latest release and running the 
 <img src="https://i.imgur.com/IVPNGoi.png">
  
  After running melonDS-RPC.exe, the program minimizes to the system tray and runs in the background – it has no GUI.
- It automatically auto-starts with your Windows. You can turn it off, as well as just exit the application.
+ It automatically starts with your Windows. You can turn it off, as well as just exit the application.
 
 ### RPC in Discord
 
@@ -47,12 +47,12 @@ After loading the game in the modified melonDS emulator, melonDS-RPC forwards th
 
 <img src="https://i.imgur.com/ByIzUtj.png">
 
-The script tries to fetch, de-obfuscate and forward the data to Discord as fast as possible, but to be sure that the game you're playing will be visible in the RPC, please wait for about 5-10 seconds before switch between ROMs – if you do it too fast the RPC might break and won't display the game properly. 
+The script tries to fetch, de-obfuscate and forward the data to Discord as fast as possible, but to be sure that the game you're playing will be visible in the RPC, please wait for about 5-10 seconds before switching between ROMs – if you do it too fast the RPC might break and won't display the game properly. 
 
 ### De-obfuscator
 
 melonDS-RPC has a primitive de-obfuscator that cuts off unwanted parts of the filename, such as locations (<i>Europe, Japan, Au, Es, etc.</i>), certain signs, and, sadly, hyphens <b>(this is also something I want to rework)</b>.
-<br>Below you can see the way how the file names are de-obfuscated.
+<br>Below you can see how the example file names got de-obfuscated.
 
 <img src="https://i.imgur.com/cgvMT88.png">
 
@@ -66,7 +66,7 @@ melonDS-RPC has a primitive de-obfuscator that cuts off unwanted parts of the fi
 
 <img src="https://i.imgur.com/FBvF9oP.png">
 
-As you can see, it has its flaws. The de-obfuscator will definitely be reworked, the same can't be said about the game titles being cut off.
+As you can see, it has its flaws. The de-obfuscator will definitely be reworked, the same can't yet be said about the game titles being cut off.
 <br>Since the game name is fetched from the ROM file name displayed in the window title, some of them are cut off, for example, <b>Mario & Sonic at the Olympic Winter Games</b>.
 
 <img src="https://i.imgur.com/r3fBazR.png">
@@ -76,7 +76,7 @@ As you can see, it has its flaws. The de-obfuscator will definitely be reworked,
 <i>This is why the game title in the RPC is cut off.</i>
 <br>I will be fixing all of this. This is how things are for now.
 
-## To-Do list
+## To-Do List
 
 - fix melonDS-RPC turning on RPC in Discord despite no ROM being emulated
 - rework de-obfuscator - remove hyphens from the list, add more keywords
