@@ -8,7 +8,7 @@ def deobfuscate_name(name):
     
     name = re.sub(r"\s*\((?:Rev|Revision|v|Ver|Version)[\s\d.]+\)", "", name, flags=re.IGNORECASE)
     
-    name = re.sub(r"\s*\((?:NDSi Enhanced|DSi|NDS|Dump|Decrypted|Encrypted|Clean|Demo|Kiosk|Sample|Preview|Beta|Proto|Prototype|Unl|Unlicensed|Homebrew)\)", "", name, flags=re.IGNORECASE)
+    name = re.sub(r"\s*\((?:NDSi Enhanced|DSi|NDS|Dump|Decrypted|Encrypted|Clean|Demo|Kiosk|Sample|Preview|Beta|Proto|Prototype|Unl|Wi-Fi|Unlicensed|Homebrew)\)", "", name, flags=re.IGNORECASE)
     
     name = re.sub(r"\s*\(\d{4}\)", "", name)
     
