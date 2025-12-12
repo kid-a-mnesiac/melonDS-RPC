@@ -53,7 +53,7 @@ After loading the game in the modified melonDS emulator, melonDS-RPC forwards th
 
 ### De-obfuscator
 
-<br>melonDS-RPC's de-offuscator has been reworked. It cuts off unwanted parts of the filename, such as locations (<i>Europe, Japan, Au, Es, etc.</i>), certain signs, etc. more effetiently now.
+<br>melonDS-RPC's de-obfuscator has been reworked. It cuts off unwanted parts of the filename, such as locations (<i>Europe, Japan, Au, Es, etc.</i>), certain signs, etc., more efficiently now.
 <br>Below you can see how the example file names got de-obfuscated. I've chosen more conmplex ones to showcase the abilities of the de-obfuscator.
 
 <img src="https://i.imgur.com/YMHoNli.png">
