@@ -3,6 +3,7 @@
 <b>melonDS-RPC</b> is a simple Python script that adds Rich Presence in Discord for the <a href="https://github.com/melonDS-emu/melonDS">melonDS emulator</a>, specifically, a special version of melonDS.
 <br>This script requires a modified version of the melonDS emulator, <a href="https://github.com/kid-a-mnesiac/melonDS-ROMname">melonDS-ROMname</a>.
 
+
 ## Why is melonDS-ROMname needed? 
 
 melonDS-RPC fetches the window title, de-obfuscates it through a special script and displays the clean, de-obfuscated game title in your Discord RPC.
@@ -29,59 +30,62 @@ The installation is as simple as downloading the latest release and running the 
 
 <img src="https://i.imgur.com/IVPNGoi.png">
  
- After running melonDS-RPC.exe, the program minimizes to the system tray and runs in the background – it has no GUI.
- It automatically starts with your Windows. You can turn it off, as well as just exit the application.
+After running melonDS-RPC.exe, the program minimizes to the system tray and runs in the background – it has no GUI.
+It automatically starts with your Windows. You can turn it off, as well as just exit the application.
 
 ### RPC in Discord
 
-Having melonDS-RPC open will automatically activate melonDS RPC in Discord <b>(this is something I'm planning on fixing)</b>, even if you don't have melonDS registered/detected as a game in Discord. Please note that <i>you do <b>not</b> have to have melonDS registered/detected in Discord for this to work</i>.
-<br>While a ROM is not loaded, melonDS-RPC will show the message '<i>Waiting for melonDS</i>'.
+Having melonDS-RPC running and stored in tray will automatically activate melonDS RPC in Discord whenever your <a href="https://github.com/kid-a-mnesiac/melonDS-ROMname">modified version of melonDS</a> is running. Please note that <i>you do <b>not</b> have to have melonDS registered/detected in Discord for this to work</i>.
+<br>While a ROM is not loaded, melonDS-RPC in the tray will show the message '<i>Waiting for melonDS</i>'.
 <br>Note: <i>melonDS-RPC does not fetch data from the original melonDS – only from the modified melonDS-ROMname</i>.
 
-<img src="https://i.imgur.com/E4Fgntg.png">
-
-<img src="https://i.imgur.com/7zUGxxp.png">
+<img src="https://i.imgur.com/C1W30RW.png">
 
 After loading the game in the modified melonDS emulator, melonDS-RPC forwards the game name to Discord.
-<br>Ejecting the ROM will change the message to '<i>Idle</i>'.
+<br>Ejecting the ROM will change the message to '<i>No ROM loaded</i>'.
 
-<img src="https://i.imgur.com/ByIzUtj.png">
+<img src="https://i.imgur.com/DyZ9g7M.png">
 
-The script tries to fetch, de-obfuscate and forward the data to Discord as fast as possible, but to be sure that the game you're playing will be visible in the RPC, please wait for about 5-10 seconds before switching between ROMs – if you do it too fast the RPC might break and won't display the game properly. 
+<img src="https://i.imgur.com/GaUeq2L.png">
+<i>Ejected ROM.</i>
+
+<br>Closing melonDS emulator will make the Discord RPC disappear.
 
 ### De-obfuscator
 
-melonDS-RPC has a primitive de-obfuscator that cuts off unwanted parts of the filename, such as locations (<i>Europe, Japan, Au, Es, etc.</i>), certain signs, and, sadly, hyphens <b>(this is also something I want to rework)</b>.
-<br>Below you can see how the example file names got de-obfuscated.
+<br>melonDS-RPC's de-offuscator has been reworked. It cuts off unwanted parts of the filename, such as locations (<i>Europe, Japan, Au, Es, etc.</i>), certain signs, etc. more effetiently now.
+<br>Below you can see how the example file names got de-obfuscated. I've chosen more conmplex ones to showcase the abilities of the de-obfuscator.
 
-<img src="https://i.imgur.com/cgvMT88.png">
+<img src="https://i.imgur.com/YMHoNli.png">
 
-<img src="https://i.imgur.com/oBfCAeS.png">
+<img src="https://i.imgur.com/TkRTHyL.png">
 
-<img src="https://i.imgur.com/r3fBazR.png">
+<img src="https://i.imgur.com/7X8kKEs.png">
 
-<img src="https://i.imgur.com/Aeh7sKh.png">
+<img src="https://i.imgur.com/QvlZ3ij.png">
 
-<img src="https://i.imgur.com/b3BbYkZ.png">
+<img src="https://i.imgur.com/6wzSR8i.png">
 
-<img src="https://i.imgur.com/FBvF9oP.png">
+<img src="https://i.imgur.com/ioEvxxZ.png">
 
-As you can see, it has its flaws. The de-obfuscator will definitely be reworked, the same can't yet be said about the game titles being cut off.
-<br>Since the game name is fetched from the ROM file name displayed in the window title, some of them are cut off, for example, <b>Mario & Sonic at the Olympic Winter Games</b>.
+<img src="https://i.imgur.com/Wsfwz9S.png">
 
-<img src="https://i.imgur.com/r3fBazR.png">
+<img src="https://i.imgur.com/YDUb841.png">
 
-<img src="https://i.imgur.com/zRuTj5V.png">
-
-<i>This is why the game title in the RPC is cut off.</i>
-<br>I will be fixing all of this. This is how things are for now.
-
-## To-Do List
-
-- fix melonDS-RPC turning on RPC in Discord despite no ROM being emulated
-- rework de-obfuscator - remove hyphens from the list, add more keywords
-- fix game titles being cut off
+## To-Do List & Changelog
+### To-Do List
+- <s>fix melonDS-RPC turning on RPC in Discord despite no ROM being emulated</s> [FIXED]
+- <s>rework de-obfuscator - remove hyphens from the list, add more keywords</s> [FIXED]
+- <s>fix game titles being cut off</s> [FIXED]
 - MAYBE add icons
+
+### Changelog
+12.12.2025
+- melonDS-ROMname 1.1 support
+- No longer shows RPC in Discord when no melonDS-ROMname is launched.
+- The de-obfuscator can handle most of the file names now.
+- <a href="https://github.com/kid-a-mnesiac/melonDS-ROMname">melonDS-ROMname</a> doesn't cut off game titles anymore.
+- Clicking on GUI buttons doesn't throw off the RPC.
 
 ## Credits
 
