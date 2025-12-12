@@ -1,8 +1,8 @@
 from pypresence import Presence
-import time, os, tempfile, shutil, psutil, threading, sys, winreg
+import time, os, tempfile, shutil, psutil, threading, sys, winreg, re
 from deobfuscator import deobfuscate_name
 from PIL import Image, ImageDraw
-import pystray
+import pystray    
 
 CLIENT_ID = "1436051986616287232"
 CHECK_INTERVAL = 3
@@ -21,9 +21,9 @@ class MelonDSRPC:
         self.previous_extracted_name = None
         self.start_time = None
         self.rpc_active = False
-        self.idle_shown = False
         self.icon = None
         self.autostart_enabled = self.check_autostart()
+        self.no_rom_counter = 0
         
     def create_image(self):
         """Load system tray icon from ICO file."""
@@ -32,10 +32,8 @@ class MelonDSRPC:
                 icon_path = os.path.join(sys._MEIPASS, "rpc_tray.ico")
             else:
                 icon_path = "rpc_tray.ico"
-            
             return Image.open(icon_path)
-        except Exception as e:
-            print(f"Warning: Could not load rpc_tray.ico: {e}")
+        except:
             image = Image.new('RGB', (64, 64), color='#008148')
             dc = ImageDraw.Draw(image)
             dc.rectangle([10, 10, 54, 54], fill='white')
@@ -43,14 +41,12 @@ class MelonDSRPC:
             return image
     
     def get_exe_path(self):
-        """Get the path to the current executable."""
         if getattr(sys, 'frozen', False):
             return sys.executable
         else:
             return os.path.abspath(sys.argv[0])
     
     def check_autostart(self):
-        """Check if autostart is enabled in registry."""
         try:
             key = winreg.OpenKey(winreg.HKEY_CURRENT_USER, REGISTRY_PATH, 0, winreg.KEY_READ)
             try:
@@ -64,7 +60,6 @@ class MelonDSRPC:
             return False
     
     def enable_autostart(self):
-        """Enable autostart by adding to registry."""
         try:
             exe_path = self.get_exe_path()
             key = winreg.OpenKey(winreg.HKEY_CURRENT_USER, REGISTRY_PATH, 0, winreg.KEY_SET_VALUE)
@@ -77,7 +72,6 @@ class MelonDSRPC:
             return False
     
     def disable_autostart(self):
-        """Disable autostart by removing from registry."""
         try:
             key = winreg.OpenKey(winreg.HKEY_CURRENT_USER, REGISTRY_PATH, 0, winreg.KEY_SET_VALUE)
             try:
@@ -92,14 +86,12 @@ class MelonDSRPC:
             return False
     
     def toggle_autostart(self, icon, item):
-        """Toggle autostart on/off."""
         if self.autostart_enabled:
             self.disable_autostart()
         else:
             self.enable_autostart()
     
     def update_menu(self):
-        """Update the system tray menu with current autostart status."""
         if self.icon:
             menu = pystray.Menu(
                 pystray.MenuItem("melonDS RPC", lambda: None, enabled=False),
@@ -115,23 +107,22 @@ class MelonDSRPC:
             self.icon.menu = menu
     
     def is_discord_running(self):
-        """Check if Discord is running."""
         for proc in psutil.process_iter(['name']):
             try:
-                pname = proc.info['name'].lower()
-                if 'discord' in pname:
+                if 'discord' in proc.info['name'].lower():
                     return True
             except (psutil.NoSuchProcess, psutil.AccessDenied):
                 continue
         return False
     
     def is_melonds_running(self):
-        """Check if melonDS.exe is currently running."""
+        """Check if any melonDS related exe is running."""
         for proc in psutil.process_iter(['name']):
             try:
-                if proc.info['name'].lower() == 'melonds.exe':
+                proc_name = proc.info['name'].lower()
+                if 'melonds' in proc_name and 'rpc' not in proc_name:
                     return True
-            except (psutil.NoSuchProcess, psutil.AccessDenied):
+            except (psutil.NoSuchProcess, psutil.AccessDenied, TypeError):
                 continue
         return False
     
@@ -145,10 +136,13 @@ class MelonDSRPC:
                 if win32gui.IsWindowVisible(hwnd):
                     _, pid = win32process.GetWindowThreadProcessId(hwnd)
                     for proc in psutil.process_iter(['pid', 'name']):
-                        if proc.info['pid'] == pid and proc.info['name'].lower() == 'melonds.exe':
-                            title = win32gui.GetWindowText(hwnd)
-                            if title:
-                                titles.append(title)
+                        try:
+                            if proc.info['pid'] == pid and 'melonds' in proc.info['name'].lower():
+                                title = win32gui.GetWindowText(hwnd)
+                                if title:
+                                    titles.append(title)
+                        except:
+                            pass
                 return True
             
             titles = []
@@ -167,34 +161,54 @@ class MelonDSRPC:
             shutil.rmtree(TEMP_DIR, ignore_errors=True)
     
     def connect_rpc(self):
-        """Connect to Discord RPC."""
         try:
             self.rpc = Presence(CLIENT_ID)
             self.rpc.connect()
             self.update_icon_status("Connected to Discord")
             return True
         except:
-            self.update_icon_status("Discord not running")
+            self.update_icon_status("Discord not available")
             return False
     
+    def disconnect_rpc(self):
+        """Disconnect and clear RPC from Discord."""
+        if self.rpc:
+            try:
+                self.rpc.clear()
+                self.rpc.close()
+            except:
+                pass
+            self.rpc = None
+            self.rpc_active = False
+    
     def update_icon_status(self, status):
-        """Update system tray tooltip."""
         if self.icon:
             self.icon.title = f"melonDS RPC\n{status}"
     
     def run_rpc(self):
-        """Main RPC loop."""
+        """Main RPC loop - only shows presence when melonDS is running."""
         self.prepare_temp_dir()
         
         while self.running:
-            if not self.is_discord_running():
+            # Check if melonDS is running FIRST
+            if not self.is_melonds_running():
+                # melonDS not running - clear Discord presence
+                if self.rpc_active:
+                    self.disconnect_rpc()
+                    self.update_icon_status("Waiting for melonDS")
+                    self.current_display_name = None
+                    self.previous_extracted_name = None
+                    self.clean_temp_dir()
+                
+                time.sleep(CHECK_INTERVAL)
+                continue
+            
+            discord_running = self.is_discord_running()
+            
+            if not discord_running:
                 if self.rpc:
-                    try:
-                        self.rpc.close()
-                    except:
-                        pass
-                    self.rpc = None
-                self.update_icon_status("Waiting for Discord...")
+                    self.disconnect_rpc()
+                self.update_icon_status("Discord not running")
                 time.sleep(5)
                 continue
             
@@ -203,35 +217,31 @@ class MelonDSRPC:
                     time.sleep(5)
                     continue
             
-            if not self.is_melonds_running():
-                if not self.idle_shown:
-                    try:
-                        self.rpc.update(
-                            details="No ROM loaded",
-                            state="Waiting for melonDS",
-                            large_image="nds_icon",
-                            large_text="Nintendo DS Emulator"
-                        )
-                        self.idle_shown = True
-                        self.rpc_active = False
-                        self.update_icon_status("Waiting for melonDS")
-                    except:
-                        self.rpc = None
-                time.sleep(CHECK_INTERVAL)
-                continue
-            
             window_title = self.get_melonds_window_title()
             
             if window_title != self.current_window_title:
                 self.current_window_title = window_title
             
-            rom_is_loaded = window_title and " - " in window_title and "melonDS" in window_title
+            # Skip if title is EXACTLY "melonDS" (menu click flicker)
+            if window_title and window_title.strip() == "melonDS":
+                # Menu interaction - skip this check entirely
+                time.sleep(CHECK_INTERVAL)
+                continue
+            
+            rom_is_loaded = window_title and " - " in window_title
+            extracted_name = None
             
             if rom_is_loaded:
-                parts = window_title.split(" - ")
-                extracted_name = parts[0].strip() if len(parts) >= 2 else None
-                
-                if extracted_name and extracted_name != self.previous_extracted_name:
+                if "melonDS" in window_title and " - " in window_title:
+                    parts = window_title.split(" - ", 1)
+                    if len(parts) >= 2:
+                        rom_part = parts[1].strip()
+                        rom_part = re.sub(r'\s*\[[\d/]+\]\s*$', '', rom_part)
+                        extracted_name = rom_part.strip()
+            
+            # Process extracted name
+            if extracted_name:
+                if extracted_name != self.previous_extracted_name:
                     rom_name_clean = deobfuscate_name(extracted_name)
                     rom_name_display = rom_name_clean.upper()
                     
@@ -251,43 +261,47 @@ class MelonDSRPC:
                             large_text=self.current_display_name
                         )
                         self.rpc_active = True
-                        self.idle_shown = False
                         self.update_icon_status(f"Playing: {rom_name_display[:20]}")
                     except:
                         self.rpc = None
             else:
-                # NO ROM LOADED
-                if self.rpc_active and not self.idle_shown:
+                # No ROM extracted - clear if we had one
+                if self.previous_extracted_name is not None:
+                    self.previous_extracted_name = None
+                    self.current_display_name = None
+                    
                     try:
                         self.rpc.update(
-                            details="No ROM loaded",
-                            state="Idle",
+                            details="melonDS",
+                            state="No ROM loaded",
                             large_image="nds_icon",
                             large_text="Nintendo DS Emulator"
                         )
-                        self.idle_shown = True
-                        self.update_icon_status("melonDS idle")
+                        self.rpc_active = True
+                        self.update_icon_status("melonDS idle (no ROM)")
                     except:
                         self.rpc = None
-                    
-                    self.previous_extracted_name = None
-                    self.current_display_name = None
-                    self.start_time = None
-                    self.rpc_active = False
-                    self.clean_temp_dir()
+                elif not self.rpc_active:
+                    try:
+                        self.rpc.update(
+                            details="melonDS",
+                            state="No ROM loaded",
+                            large_image="nds_icon",
+                            large_text="Nintendo DS Emulator"
+                        )
+                        self.rpc_active = True
+                        self.update_icon_status("melonDS idle (no ROM)")
+                    except:
+                        self.rpc = None
+
+
             
             time.sleep(CHECK_INTERVAL)
         
-        if self.rpc:
-            try:
-                self.rpc.clear()
-                self.rpc.close()
-            except:
-                pass
+        self.disconnect_rpc()
         self.clean_temp_dir()
     
     def start(self):
-        """Start the RPC service."""
         if not self.running:
             self.running = True
             self.thread = threading.Thread(target=self.run_rpc, daemon=True)
@@ -295,13 +309,11 @@ class MelonDSRPC:
             self.update_icon_status("Starting...")
     
     def stop(self):
-        """Stop the RPC service."""
         self.running = False
         if self.thread:
             self.thread.join(timeout=2)
     
     def quit_app(self, icon, item):
-        """Quit the application."""
         self.stop()
         icon.stop()
 
@@ -324,9 +336,7 @@ def main():
     )
     
     app.icon = pystray.Icon("melonds_rpc", app.create_image(), "melonDS RPC", menu)
-    
     app.start()
-    
     app.icon.run()
 
 if __name__ == "__main__":

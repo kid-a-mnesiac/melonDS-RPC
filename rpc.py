@@ -19,13 +19,13 @@ except Exception as e:
     exit(1)
 
 # --- process checking ---
-def is_melonds_running():
-    """Check if melonDS.exe is currently running."""
+def is_melonds_running(self):
+    """Check if any melonDS related exe is currently running."""
     for proc in psutil.process_iter(['name']):
         try:
-            if proc.info['name'].lower() == 'melonds.exe':
+            if 'melonds' in proc.info['name'].lower():
                 return True
-        except (psutil.NoSuchProcess, psutil.AccessDenied):
+        except (psutil.NoSuchProcess, psutil.AccessDenied, TypeError):
             continue
     return False
 
